@@ -48,6 +48,8 @@
 #include "strbuf.h"
 #include "fpconv.h"
 
+#include "bio.h"
+
 #ifndef CJSON_MODNAME
 #define CJSON_MODNAME   "cjson"
 #endif
@@ -1464,12 +1466,27 @@ static int json_decode(lua_State *l)
 {
     json_parse_t json;
     json_token_t token;
-    size_t json_len;
+    size_t enc_len;
 
     luaL_argcheck(l, lua_gettop(l) == 1, 1, "expected 1 argument");
 
+    const char *password = "123456";
+
+    const char *enc_json = luaL_checklstring(l, 1, &enc_len);
+    int enc_json_len = strlen(enc_json);
+    int dec_json_len;
+    char *dec_json_buf;
+    dec_json_buf = bio_decrypt_json(enc_json, enc_json_len, password, &dec_json_len);
+
+    if (dec_json_buf != NULL) {
+        luaL_error(l,"Decrypted json: %.*s\n", dec_json_len, dec_json_buf);
+        free(dec_json_buf);
+    } else {
+       luaL_error(l, "Decrypted json failed.\n");
+    }
+
     json.cfg = json_fetch_config(l);
-    json.data = luaL_checklstring(l, 1, &json_len);
+    json.data = dec_json_buf;
     json.current_depth = 0;
     json.ptr = json.data;
 
@@ -1478,13 +1495,13 @@ static int json_decode(lua_State *l)
      * CJSON can support any simple data type, hence only the first
      * character is guaranteed to be ASCII (at worst: '"'). This is
      * still enough to detect whether the wrong encoding is in use. */
-    if (json_len >= 2 && (!json.data[0] || !json.data[1]))
+    if (dec_json_len >= 2 && (!json.data[0] || !json.data[1]))
         luaL_error(l, "JSON parser does not support UTF-16 or UTF-32");
 
     /* Ensure the temporary buffer can hold the entire string.
      * This means we no longer need to do length checks since the decoded
      * string must be smaller than the entire json string */
-    json.tmp = strbuf_new(json_len);
+    json.tmp = strbuf_new(dec_json_len);
 
     json_next_token(&json, &token);
     json_process_value(l, &json, &token);

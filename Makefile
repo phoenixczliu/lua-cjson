@@ -15,7 +15,7 @@ LUA_VERSION =       5.1
 TARGET =            cjson.so
 PREFIX =            /usr/local
 #CFLAGS =            -g -Wall -pedantic -fno-inline
-CFLAGS =            -O3 -Wall -pedantic -DNDEBUG -g
+CFLAGS =            -g3 -O0 -Wall -pedantic -DNDEBUG -g
 CJSON_CFLAGS =      -fpic
 CJSON_LDFLAGS =     -shared
 LUA_INCLUDE_DIR ?=   $(PREFIX)/include
@@ -82,7 +82,7 @@ EXECPERM =          755
 ASCIIDOC =          asciidoc
 
 BUILD_CFLAGS =      -I$(LUA_INCLUDE_DIR) $(CJSON_CFLAGS)
-OBJS =              lua_cjson.o strbuf.o $(FPCONV_OBJS)
+OBJS =              bio.o lua_cjson.o strbuf.o $(FPCONV_OBJS)
 
 .PHONY: all clean install install-extra doc
 
