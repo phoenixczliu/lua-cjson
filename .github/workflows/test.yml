@@ -46,14 +46,10 @@ jobs:
 
     # - name: cppcheck
     #   run: cppcheck -i .lua/ -i .install/ -i dtoa.c --force --error-exitcode=1 --enable=warning --inline-suppr .
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      with:
-        limit-access-to-actor: false
 
     - name: build lua-cjson
       run: |
-        make -j2 CCDEBUG=-g Q= PREFIX= CC=gcc  TARGET_XLIBS="-lm -ldl -lssl -lcrypto" TARGET_XLDFLAGS="-Wl,--no-as-needed,-E"
+        make LUA_INCLUDE_DIR=${{ github.workspace }}/.lua/include/luajit-2.1 AEGIS_ENCRYPT_PASSWORD="123456"
 
     - name: prove
       run: |
