@@ -29,6 +29,7 @@ jobs:
     - name: prepare encrypt file
       run: |
         openssl aes-256-cbc -p -nosalt -pbkdf2 -pass pass:123456 -in ./tests/example2.json -out ./tests/example2.json.enc
+        sed -i '1s/^/aegis_enc:/' ./tests/example2.json.enc
 
     # - name: runtests.sh
     #   env:

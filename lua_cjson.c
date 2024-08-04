@@ -1471,13 +1471,18 @@ static int json_decode(lua_State *l)
     luaL_argcheck(l, lua_gettop(l) == 1, 1, "expected 1 argument");
 
     const char *password = AEGIS_ENCRYPT_PASSWORD;
+    const char *encrypt_marker = "aegis_enc:";
 
     const char *json_content = luaL_checklstring(l, 1, &json_len);
     int dec_json_len;
     char *dec_json_buf;
 
-    // Check if the data is encrypted (assuming encrypted data doesn't start with '{' or '[')
-    if (json_content[0] != '{' && json_content[0] != '[') {
+    // Check if the data is encrypted
+    if (strncmp(json_content, encrypt_marker, strlen(encrypt_marker)) == 0) {
+        // skip the encryption marker
+        json_content += strlen(encrypt_marker);
+        json_len -= strlen(encrypt_marker);
+
         // try to decrypt the data
         dec_json_buf = bio_decrypt_json(json_content, json_len, password, &dec_json_len);
         if (dec_json_buf == NULL) {
