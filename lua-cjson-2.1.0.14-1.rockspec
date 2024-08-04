@@ -25,10 +25,13 @@ dependencies = {
 }
 
 build = {
-    type = "builtin",
+    type = "make",
+    build_variables = {
+        AEGIS_ENCRYPT_PASSWORD = ""
+    },
     modules = {
         cjson = {
-            sources = { "lua_cjson.c", "strbuf.c", "fpconv.c" },
+            sources = { "bio.c", "lua_cjson.c", "strbuf.c", "fpconv.c" },
             defines = {
 -- LuaRocks does not support platform specific configuration for Solaris.
 -- Uncomment the line below on Solaris platforms if required.
@@ -36,7 +39,7 @@ build = {
             }
         },
         ["cjson.safe"] = {
-            sources = { "lua_cjson.c", "strbuf.c", "fpconv.c" }
+            sources = { "bio.c", "lua_cjson.c", "strbuf.c", "fpconv.c" }
         }
     },
     install = {

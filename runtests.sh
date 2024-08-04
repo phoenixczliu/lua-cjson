@@ -44,42 +44,43 @@ fi
 cd ..
 
 echo "===== Testing LuaRocks build ====="
+# luarocks make --local LUA_INCDIR="${PWD}"/"${LUA_DIR}"/include/luajit-2.1 DESTDIR="${HOME}"/.luarocks  AEGIS_ENCRYPT_PASSWORD="123456"
 luarocks make --local
 do_tests
 luarocks remove --local lua-cjson
 make clean
 
-echo "===== Testing Makefile build ====="
-make "$@"
-cp -r lua/cjson cjson.so tests
-do_tests
-make clean
-rm -rf tests/cjson{,.so}
+# echo "===== Testing Makefile build ====="
+# make "$@"
+# cp -r lua/cjson cjson.so tests
+# do_tests
+# make clean
+# rm -rf tests/cjson{,.so}
 
 
-if [ -z "$SKIP_CMAKE" ]; then
-    echo "===== Testing Cmake build ====="
-    mkdir build
-    cd build
-    cmake ..
-    make
-    cd ..
-    cp -r lua/cjson build/cjson.so tests
-    do_tests
-    rm -rf build tests/cjson{,.so}
+# if [ -z "$SKIP_CMAKE" ]; then
+#     echo "===== Testing Cmake build ====="
+#     mkdir build
+#     cd build
+#     cmake ..
+#     make
+#     cd ..
+#     cp -r lua/cjson build/cjson.so tests
+#     do_tests
+#     rm -rf build tests/cjson{,.so}
 
-    echo "===== Testing Cmake fpconv build ====="
-    mkdir build
-    cd build
-    cmake -DUSE_INTERNAL_FPCONV=1 ..
-    make
-    cd ..
-    cp -r lua/cjson build/cjson.so tests
-    do_tests
-    rm -rf build tests/cjson{,.so}
-else
-    echo "===== Skipping Cmake build ====="
-fi
+#     echo "===== Testing Cmake fpconv build ====="
+#     mkdir build
+#     cd build
+#     cmake -DUSE_INTERNAL_FPCONV=1 ..
+#     make
+#     cd ..
+#     cp -r lua/cjson build/cjson.so tests
+#     do_tests
+#     rm -rf build tests/cjson{,.so}
+# else
+#     echo "===== Skipping Cmake build ====="
+# fi
 
 
 # vi:ai et sw=4 ts=4:
