@@ -46,6 +46,10 @@ jobs:
 
     # - name: cppcheck
     #   run: cppcheck -i .lua/ -i .install/ -i dtoa.c --force --error-exitcode=1 --enable=warning --inline-suppr .
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: false
 
     - name: build lua-cjson
       run: |
