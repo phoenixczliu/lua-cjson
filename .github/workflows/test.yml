@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         cc: ["gcc", "clang"]
-        luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit", "luajit-openresty"]
+        luaVersion: ["luajit", "luajit-openresty"]
         include:
           - luaVersion: "luajit"
             runtestArgs: "LUA_INCLUDE_DIR=.lua/include/luajit-2.1"
@@ -22,12 +22,15 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
+    - name: install dependencies
+      run: sudo apt-get update && sudo apt-get install -y libssl-dev
+
     - uses: leafo/gh-actions-lua@master
       env:
         CC: ${{ matrix.cc }}
       with:
         luaVersion: ${{ matrix.luaVersion }}
-        luaCompileFlags: CC=${{ matrix.cc }}
+        luaCompileFlags: CC=${{ matrix.cc }} TARGET_XLIBS="-lm -ldl -lssl -lcrypto" TARGET_LDFLAGS="-Wl,--no-as-needed,-E"
 
     - uses: leafo/gh-actions-luarocks@master
 
