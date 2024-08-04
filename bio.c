@@ -7,53 +7,31 @@
 #define ERR_EVP_CTX_NEW -4
 #define BUFSIZE 1024
 
-int mem_encrypt_decrypt(cipher_params_t *params, unsigned char *in_data, int in_len, unsigned char *out_data, int out_len) {
-    /* Allow enough space in output buffer for additional block */
-    int cipher_block_size = EVP_CIPHER_block_size(params->cipher_type);
-    unsigned char out_buf[BUFSIZE + cipher_block_size];
-
-    int out_data_len;
-    EVP_CIPHER_CTX *ctx;
-
-    ctx = EVP_CIPHER_CTX_new();
-    if(ctx == NULL){
+int mem_encrypt_decrypt(cipher_params_t *params, unsigned char *enc_json, int enc_json_len, unsigned char *dec_buf, int dec_buf_len) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (ctx == NULL) {
         return -1;
     }
 
-    /* Don't set key or IV right away; we want to check lengths */
-    if(!EVP_CipherInit_ex(ctx, params->cipher_type, NULL, NULL, NULL, params->encrypt)){
-        EVP_CIPHER_CTX_reset(ctx);
+    if (!EVP_CipherInit_ex(ctx, params->cipher_type, NULL, params->key, params->iv, params->encrypt)) {
+        EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
 
-    /* Now we can set key and IV */
-    if(!EVP_CipherInit_ex(ctx, NULL, NULL, params->key, params->iv, params->encrypt)){
-        EVP_CIPHER_CTX_reset(ctx);
+    int out_len;
+    if (!EVP_CipherUpdate(ctx, dec_buf, &out_len, enc_json, enc_json_len)) {
+        EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
 
-    if(!EVP_CipherUpdate(ctx, out_buf, &out_data_len, in_data, in_len)){
-        EVP_CIPHER_CTX_reset(ctx);
+    int final_out_len;
+    if (!EVP_CipherFinal_ex(ctx, dec_buf + out_len, &final_out_len)) {
+        EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
 
-    if (out_data_len > out_len) {
-        EVP_CIPHER_CTX_reset(ctx);
-        return -1;
-    }
-
-    /* Finalize the encryption. Further calls to EVP_CipherFinal_ex can only output zeroes. */
-    if(!EVP_CipherFinal_ex(ctx, out_data, &out_data_len)){
-        EVP_CIPHER_CTX_reset(ctx);
-        return -1;
-    }
-    
-    memcpy(out_data, out_buf, out_data_len);
-    out_data += out_data_len;
-    
-
-    EVP_CIPHER_CTX_reset(ctx);
-    return out_data_len;
+    EVP_CIPHER_CTX_free(ctx);
+    return out_len + final_out_len;
 }
 
 int get_key_iv(const char *password, const EVP_CIPHER *cipher, unsigned char *key, unsigned char *iv) {

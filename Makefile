@@ -25,6 +25,8 @@ LUA_BIN_DIR ?=       $(PREFIX)/bin
 
 AR= $(CC) -o
 
+AEGIS_ENCRYPT_PASSWORD ?= default_password
+
 ##### Platform overrides #####
 ##
 ## Tweak one of the platform sections below to suit your situation.
@@ -88,9 +90,6 @@ OBJS =              bio.o lua_cjson.o strbuf.o $(FPCONV_OBJS)
 
 .SUFFIXES: .html .adoc
 
-.c.o:
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(BUILD_CFLAGS) -o $@ $<
-
 .adoc.html:
 	$(ASCIIDOC) -n -a toc $<
 
@@ -100,6 +99,12 @@ doc: manual.html performance.html
 
 $(TARGET): $(OBJS)
 	$(AR) $@ $(LDFLAGS) $(CJSON_LDFLAGS) $(OBJS)
+
+lua_cjson.o: lua_cjson.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(BUILD_CFLAGS) -DAEGIS_ENCRYPT_PASSWORD=\"$(AEGIS_ENCRYPT_PASSWORD)\" -o $@ $<
+
+.c.o:
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(BUILD_CFLAGS) -o $@ $<
 
 install: $(TARGET)
 	mkdir -p $(DESTDIR)$(LUA_CMODULE_DIR)

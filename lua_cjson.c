@@ -1466,23 +1466,28 @@ static int json_decode(lua_State *l)
 {
     json_parse_t json;
     json_token_t token;
-    size_t enc_len;
+    size_t json_len;
 
     luaL_argcheck(l, lua_gettop(l) == 1, 1, "expected 1 argument");
 
-    const char *password = "123456";
+    const char *password = AEGIS_ENCRYPT_PASSWORD;
 
-    const char *enc_json = luaL_checklstring(l, 1, &enc_len);
-    int enc_json_len = strlen(enc_json);
+    const char *json_content = luaL_checklstring(l, 1, &json_len);
     int dec_json_len;
     char *dec_json_buf;
-    dec_json_buf = bio_decrypt_json(enc_json, enc_json_len, password, &dec_json_len);
 
-    if (dec_json_buf != NULL) {
-        luaL_error(l,"Decrypted json: %.*s\n", dec_json_len, dec_json_buf);
-        free(dec_json_buf);
+    // Check if the data is encrypted (assuming encrypted data doesn't start with '{' or '[')
+    if (json_content[0] != '{' && json_content[0] != '[') {
+        // try to decrypt the data
+        dec_json_buf = bio_decrypt_json(json_content, json_len, password, &dec_json_len);
+        if (dec_json_buf == NULL) {
+            luaL_error(l, "Failed to decrypt JSON. Data might be corrupted.\n");
+            return 0;
+        }
     } else {
-       luaL_error(l, "Decrypted json failed.\n");
+        // data is not encrypted
+        dec_json_buf = (char *)json_content;
+        dec_json_len = json_len;
     }
 
     json.cfg = json_fetch_config(l);
