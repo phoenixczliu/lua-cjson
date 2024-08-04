@@ -30,7 +30,7 @@ jobs:
         CC: ${{ matrix.cc }}
       with:
         luaVersion: ${{ matrix.luaVersion }}
-        luaCompileFlags: CC=${{ matrix.cc }} TARGET_XLIBS="-lm -ldl -lssl -lcrypto" TARGET_LDFLAGS="-Wl,--no-as-needed,-E"
+        luaCompileFlags: 'CC=gcc TARGET_XLIBS="-lm -ldl -lssl -lcrypto" TARGET_LDFLAGS="-Wl,--no-as-needed,-E"'
 
     - uses: leafo/gh-actions-luarocks@master
 
