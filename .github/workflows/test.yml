@@ -8,14 +8,6 @@ jobs:
       fail-fast: false
       matrix:
         cc: ["gcc", "clang"]
-        luaVersion: ["luajit", "luajit-openresty"]
-        include:
-          - luaVersion: "luajit"
-            runtestArgs: "LUA_INCLUDE_DIR=.lua/include/luajit-2.1"
-            runtestEnv: "SKIP_CMAKE=1"
-          - luaVersion: "luajit-openresty"
-            runtestArgs: "LUA_INCLUDE_DIR=.lua/include/luajit-2.1"
-            runtestEnv: "SKIP_CMAKE=1"
 
     runs-on: ubuntu-24.04
 
@@ -25,12 +17,12 @@ jobs:
     - name: install dependencies
       run: sudo apt-get update && sudo apt-get install -y libssl-dev
 
-    - uses: leafo/gh-actions-lua@master
-      env:
-        CC: ${{ matrix.cc }}
-      with:
-        luaVersion: ${{ matrix.luaVersion }}
-        luaCompileFlags: 'CC=gcc TARGET_XLIBS="-lm -ldl -lssl -lcrypto" TARGET_LDFLAGS="-Wl,--no-as-needed,-E"'
+    - name: build openresty-luajit2
+      run: |
+        git clone https://github.com/openresty/luajit2.git
+        cd luajit2
+        make -j CC=${{ matrix.cc }} TARGET_XLIBS="-lm -ldl -lssl -lcrypto" TARGET_LDFLAGS="-Wl,--no-as-needed,-E"
+        make -j install PREFIX=${{ github.workspace }}/.lua
 
     - uses: leafo/gh-actions-luarocks@master
 
