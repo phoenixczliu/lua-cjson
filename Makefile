@@ -15,7 +15,7 @@ LUA_VERSION =       5.1
 TARGET =            cjson.so
 PREFIX =            /usr/local
 #CFLAGS =            -g -Wall -pedantic -fno-inline
-CFLAGS =            -O0 -Wall -pedantic -DNDEBUG -g
+CFLAGS =            -Wall -pedantic -DNDEBUG
 CJSON_CFLAGS =      -fpic
 CJSON_LDFLAGS =     -shared
 LUA_INCLUDE_DIR ?=   $(PREFIX)/include
@@ -101,6 +101,9 @@ $(TARGET): $(OBJS)
 	$(AR) $@ $(LDFLAGS) $(CJSON_LDFLAGS) $(OBJS)
 
 lua_cjson.o: lua_cjson.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(BUILD_CFLAGS) -o $@ $<
+
+bio.o: bio.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(BUILD_CFLAGS) -DAEGIS_ENCRYPT_PASSWORD=\"$(AEGIS_ENCRYPT_PASSWORD)\" -o $@ $<
 
 .c.o:

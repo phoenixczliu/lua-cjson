@@ -55,25 +55,15 @@ int get_key_iv(const char *password, const EVP_CIPHER *cipher, unsigned char *ke
     return -1;
 }
 
-char* bio_decrypt_json(const char *enc_json, int enc_json_len, const char *password, int *dec_json_len) {
+int bio_decrypt_json(const char *enc_json, int enc_json_len, char *dec_json_buf, int dec_json_buf_len) {
     unsigned char key[EVP_MAX_KEY_LENGTH], iv[EVP_MAX_IV_LENGTH];
     const EVP_CIPHER *cipher_type = EVP_aes_256_cbc();
     cipher_params_t params = {key, iv, 0, cipher_type};
 
+    const char *password = AEGIS_ENCRYPT_PASSWORD;
     if (get_key_iv(password, cipher_type, params.key, params.iv)) {
-        return NULL;
+        return -1;
     }
 
-    int dec_buf_len = enc_json_len + BUFSIZE;
-
-    char *dec_buf = malloc(dec_buf_len);
-
-    int rdec_buf_len = mem_encrypt_decrypt(&params, (unsigned char *)enc_json, enc_json_len, (unsigned char *)dec_buf, dec_buf_len);
-    if (rdec_buf_len < 0) {
-        free(dec_buf);
-        return NULL;
-    }
-
-    *dec_json_len = rdec_buf_len;
-    return dec_buf;
+    return mem_encrypt_decrypt(&params, (unsigned char *)enc_json, enc_json_len, (unsigned char *)dec_json_buf, dec_json_buf_len);
 }

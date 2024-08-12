@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+#define DECRYPT_BUFFER_SIZE 1024
 
 typedef struct cipher_params_s {
     unsigned char *key;
@@ -13,4 +14,4 @@ typedef struct cipher_params_s {
     const EVP_CIPHER *cipher_type;
 } cipher_params_t;
 
-char* bio_decrypt_json(const char *enc_json, int enc_json_len, const char *password, int *dec_json_len);
+int bio_decrypt_json(const char *enc_json, int enc_json_len, char *dec_json_buf, int dec_json_buf_len);

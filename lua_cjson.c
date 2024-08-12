@@ -1470,7 +1470,6 @@ static int json_decode(lua_State *l)
 
     luaL_argcheck(l, lua_gettop(l) == 1, 1, "expected 1 argument");
 
-    const char *password = AEGIS_ENCRYPT_PASSWORD;
     const char *encrypt_marker = "aegis_enc:";
 
     const char *json_content = luaL_checklstring(l, 1, &json_len);
@@ -1484,10 +1483,18 @@ static int json_decode(lua_State *l)
         json_len -= strlen(encrypt_marker);
 
         // try to decrypt the data
-        dec_json_buf = bio_decrypt_json(json_content, json_len, password, &dec_json_len);
+        int dec_json_buf_len = json_len + DECRYPT_BUFFER_SIZE;
+        dec_json_buf = malloc(dec_json_buf_len);
         if (dec_json_buf == NULL) {
-            luaL_error(l, "Failed to decrypt JSON. Data might be corrupted.\n");
+            luaL_error(l, "Failed to allocate memory for decrypted JSON.\n");
             return 0;
+        }
+
+        dec_json_len = bio_decrypt_json(json_content, json_len, dec_json_buf, dec_json_buf_len);
+        if (dec_json_len < 0 || dec_json_len > dec_json_buf_len) {
+            free(dec_json_buf);
+            luaL_error(l, "Failed to decrypt JSON, the length of the decrypted data is %d.\n", dec_json_len);
+            return -1;
         }
     } else {
         // data is not encrypted
@@ -1523,6 +1530,10 @@ static int json_decode(lua_State *l)
         json_throw_parse_error(l, &json, "the end", &token);
 
     strbuf_free(json.tmp);
+
+    if (strncmp(json_content, encrypt_marker, strlen(encrypt_marker)) == 0) {
+        free(dec_json_buf);
+    }
 
     return 1;
 }
