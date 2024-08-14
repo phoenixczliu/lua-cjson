@@ -1490,6 +1490,8 @@ static int json_decode(lua_State *l)
             return 0;
         }
 
+        memset(dec_json_buf, 0, dec_json_buf_len);
+
         dec_json_len = bio_decrypt_json(json_content, json_len, dec_json_buf, dec_json_buf_len);
         if (dec_json_len < 0 || dec_json_len > dec_json_buf_len) {
             free(dec_json_buf);
